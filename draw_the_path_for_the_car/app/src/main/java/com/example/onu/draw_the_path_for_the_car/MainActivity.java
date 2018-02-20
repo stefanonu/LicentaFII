@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         onMoveImage(v,centreX,centreY);
+                        canvasView.invalidate();
                     }
 
                 };
@@ -56,7 +57,8 @@ public class MainActivity extends AppCompatActivity {
     public void createDot(View v,double centreX,double centreY){
         canvasView.setImageStart(v,centreX,centreY  );
     }
-    public void onMoveImage(View v,double centreX,double centreY){
-        createDot(v,centreX,centreY);
+    public void onMoveImage(View v,double centreX,double centreY) {
+        createDot(v, centreX, centreY);
+        //setContentView(R.layout.activity_main);
     }
 }

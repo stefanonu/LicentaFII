@@ -1,7 +1,6 @@
 package com.example.onu.draw_the_path_for_the_car;
 
 import android.animation.ObjectAnimator;
-import android.animation.PropertyValuesHolder;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -11,17 +10,14 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.FloatProperty;
 import android.util.Log;
-import android.util.Property;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageView;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
-
-import static java.lang.Math.acos;
-import static java.lang.Math.sqrt;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by Onu on 2/6/2018.
@@ -39,8 +35,11 @@ public class CanvasView extends View  {
     Context context;
     private int counter=0;
     private ArrayList<Point> myPoints = new ArrayList<>();
+    private ArrayList<Point> startPoints = new ArrayList<>();
+    private ArrayList<Point> finalPoints = new ArrayList<>();
     private Point originPoint;
     private boolean flag = true;
+    private boolean flagAutocomplete = true;
 
 
     public CanvasView(Context context, @Nullable AttributeSet attrs) {
@@ -67,18 +66,21 @@ public class CanvasView extends View  {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawPath(mPath,mPaint);
+        canvas.drawPath(mPath, mPaint);
     }
 
-    private void startTouch(float x, float y){
-        mPath.moveTo(x,y);
+    private void startTouch(float x, float y) {
+        mPath.moveTo(x, y);
         mX = x;
         mY = y;
+        Point startPoint = new Point((int) mX, (int) mY);
+        startPoints.add(startPoint);
     }
 
     private void moveTouch(float x, float y){
         float dx = Math.abs(x-mX);
         float dy = Math.abs(y-mY);
+
         if(dx >= TOLERANCE || dy >= TOLERANCE){
             mPath.quadTo(mX,mY,(x + mX) / 2,(y + mY) / 2);
             mX = x;
@@ -88,24 +90,120 @@ public class CanvasView extends View  {
     public void clearCanvas(){
         mPath.reset();
         counter=0;
+        flag = true;
         invalidate();
         myPoints = new ArrayList<>();
+        startPoints.clear();
+        finalPoints.clear();
 
     }
     private void upTouch() {
         mPath.lineTo(mX, mY);
+        Point finalPoint = new Point((int) mX, (int) mY);
+        finalPoints.add(finalPoint);
     }
 
     public void setImageStart(final View view,double centreX,double centreY){
+        Set<Point> hashSetStartPoints = new HashSet<>();
+        Set<Point> hashSetFinalPoints = new HashSet<>();
+        hashSetStartPoints.addAll(startPoints);
+        hashSetFinalPoints.addAll(finalPoints);
+        startPoints.clear();
+        finalPoints.clear();
+        startPoints.addAll(hashSetStartPoints);
+        finalPoints.addAll(hashSetFinalPoints);
 
-        final float xMij = (float) centreX;
-        final float yMij = (float) centreY;
+
+        if (startPoints.size() == 1 && finalPoints.size() == 1)
+        {
+            Log.d("tag","value : " + " nothing to complete");
+        }
+        else
+        {
+            Log.d("tag","value : " + startPoints.toString() + " size : " + startPoints.size() + "\n" +
+            finalPoints.toString() + " size : " + finalPoints.size());
+
+            if(startPoints.size() > finalPoints.size())
+            {
+                ArrayList<Integer> indexes = new ArrayList<>();
+                for (Point stPoint :
+                        startPoints) {
+                    for (Point fnPoint:
+                         finalPoints) {
+                        if (fnPoint.x == stPoint.x && fnPoint.y == stPoint.y) {
+                            indexes.add(startPoints.indexOf(stPoint));
+                            continue;
+                        }
+                    }
+
+                }
+                for (int i=indexes.size()-1; i>=0; i--) {
+                    startPoints.remove(startPoints.get(indexes.get(i)));
+                }
+
+                indexes.clear();
+            }
+            if(startPoints.size() < finalPoints.size())
+            {
+                ArrayList<Integer> indexes = new ArrayList<>();
+                for (Point fnPoint :
+                        finalPoints) {
+                    for (Point stPoint:
+                            startPoints) {
+                        if (fnPoint.x == stPoint.x && fnPoint.y == stPoint.y) {
+                            indexes.add(finalPoints.indexOf(fnPoint));
+                        }
+                    }
+                }
+                for (int i=indexes.size()-1; i>=0; i--) {
+                    finalPoints.remove(finalPoints.get(indexes.get(i)));
+                }
+                indexes.clear();
+            }
+
+            if(startPoints.size() == finalPoints.size())
+            {
+                ArrayList<Integer> indexesFn = new ArrayList<>();
+                ArrayList<Integer> indexesSt = new ArrayList<>();
+                for (Point fnPoint :
+                        finalPoints) {
+                    for (Point stPoint:
+                            startPoints) {
+                        if (fnPoint.x == stPoint.x && fnPoint.y == stPoint.y) {
+                            indexesSt.add(startPoints.indexOf(stPoint));
+                            indexesFn.add(finalPoints.indexOf(fnPoint));
+                        }
+                    }
+                }
+ //               Log.d("sepparator" , "------------------------");
+   //             Log.d("tag","value : " + indexesSt.toString() + " size : " + startPoints.size() + "\n" +
+     //                   indexesFn.toString() + " size : " + finalPoints.size());
+
+                for (int i=indexesSt.size()-1; i>=0; i--) {
+                    startPoints.remove(startPoints.get(indexesSt.get(i)));
+                }
+
+                for (int i=indexesFn.size()-1; i>=0; i--) {
+                    finalPoints.remove(finalPoints.get(indexesFn.get(i)));
+                }
+
+                indexesFn.clear();
+                indexesSt.clear();
+            }
+
+            autoCompleteThePath(startPoints,finalPoints);
+            invalidate();
+
+           Log.d("tag","value : " + startPoints.toString() +" SIZE: " + startPoints.size() + "\n" + finalPoints.toString() + " SIZE: " + finalPoints.size());
+           Log.d("tag","value " + "i have to create " + ((startPoints.size()-1+finalPoints.size()-1)/2));
+        }
 
         ObjectAnimator objectAnimator =
                 ObjectAnimator.ofFloat(view, view.X,
                         View.Y, mPath);
         objectAnimator.setDuration(3000);
         objectAnimator.start();
+
     }
 
 
@@ -147,9 +245,26 @@ public class CanvasView extends View  {
     }
     public void createAngles()
     {
+        Log.d("tag","Origin Point : " + originPoint);
         for (int i =0;i< myPoints.size()-1;i++) {
-            Log.d("tag", "Ungle : " + angle(originPoint, myPoints.get(i)));
+            Log.d("tag", "Unghi : " + angle(originPoint, myPoints.get(i)));
         }
+    }
+
+    public void autoCompleteThePath(ArrayList<Point> startPoints,ArrayList<Point> finalPoints){
+
+        for (int indexSt = 1; indexSt <= startPoints.size() - 1; indexSt++) {
+            mPaint.setColor(Color.RED);
+            mPath.quadTo(finalPoints.get(indexSt - 1).x,finalPoints.get(indexSt - 1).y,startPoints.get(indexSt).x,startPoints.get(indexSt).y);//startPoints.get(indexSt).x,startPoints.get(indexSt).y,finalPoints.get(indexSt).x,finalPoints.get(indexSt).y, mPaint);
+            mPaint.setColor(Color.BLACK);
+            invalidate();
+            //Path newPath = new Path();
+            //mPath.reset();
+           // mPath.moveTo(finalPoints.get(indexSt - 1).x,finalPoints.get(indexSt - 1).y);
+           // mPath.lineTo(startPoints.get(indexSt).x,startPoints.get(indexSt).y);
+            mCanvas.drawPath(mPath,mPaint);
+        }
+        mPaint.setColor(Color.BLACK);
     }
 
 }
