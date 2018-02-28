@@ -34,14 +34,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:onClick="createAngle"
+        android:onClick="showAngle"
         android:text="Follow Path" />
-
-    <ImageView
-        android:id="@+id/image_start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/carx"/>
 
 
 </RelativeLayout>
