@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     public void clearCanvas(View v){
         canvasView.clearCanvas();
     }
-    public void showAngle(View v) { canvasView.calculateAngle();}
+    public void showAngle(View v) { canvasView.clearCanvas(); }
 
    /* public void createAngle(View v){
         canvasView.createAngles();
