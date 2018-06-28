@@ -1,4 +1,11 @@
 DRAW-THE-PATH-FOLLOW-THE-LINE.
 
 Proiect android ce presupunem desenarea unui traseu si transmiterea acestuia catre un microcontroller care va controla o masina ce va urma
-traseul indicat .
+traseul indicat.
+
+Implementare =>
+
+		1. Bluetooth BLE connection
+		2. Parsare traseu si determinare unghiuri pentru rotire imagine
+		3. MCU code pentru controlul masinii
+		4. Documentatie proiect

@@ -1,0 +1,12 @@
+In folderul fisiere_configurare o sa gasiti 2 fisiere :
+
+1. app-debug.apk
+2. car_control.bin
+
+
+Pentru instalare apk pe telefonul mobil ( presupun ca aveti sistemul de operare Android pe el) se urmeaza urmatorii pasi de la tutorialul:
+https://www.wikihow.tech/Install-APK-Files-on-Android
+
+Pentru instalare car_control.bin va trebuie o placuta de dezvoltare NUCLEO SMTP32, un modul bluetooth HC05,un servo-motor, o punte H.
+Se instaleaza driverul urmarind instructiunile de pe www.mbed.com si pur si simplu se copiaza fisierul .bin pe mcu ( acesta fiind conectat
+prin seriala cu pc`ul).
